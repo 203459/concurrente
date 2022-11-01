@@ -2,6 +2,8 @@ from queue import Queue
 import threading
 import random
 import time
+#Jose Adrian Batalla Cruz 203722
+#Marcos Alejandro Shilon Gallegos 203459
 
 total_clientes = 10
 capacidad = 10
@@ -12,7 +14,7 @@ class restaurant():
     mutex = threading.Lock()
     capacidad_I = threading.Condition()
     mesero_E = threading.Condition()
-    cocinero_A = threading.Condition()
+    chef_A = threading.Condition()
     condicion_R = threading.Condition()
     rest = Queue(capacidad)
     ordenes = Queue()
@@ -75,9 +77,9 @@ class restaurant():
                         f"la orden del cliente {str(clientes.id)} se añadió a la cola")
                     self.ordenes.put(clientes.id)
 
-                    self.cocinero_A.acquire()
-                    self.cocinero_A.notify()
-                    self.cocienro_A.release()
+                    self.chef_A.acquire()
+                    self.chef_A.notify()
+                    self.chef_A.release()
 
                     clientes.servido = True
                     self.mesero_E.release()
@@ -87,10 +89,10 @@ class restaurant():
     def cocinar(self, chef):
         while True:
             time.sleep(1)
-            self.cocinero_A.acquire()
+            self.chef_A.acquire()
             if self.ordenes.empty():
                 print(f"el cocinero {str(chef.id)} está descansando")
-                self.cocinero_A.wait()
+                self.chef_A.wait()
             else:
                 orden = self.ordenes.get()
                 print(
@@ -98,7 +100,7 @@ class restaurant():
                 time.sleep(3)
                 print(f"el pedido de el cliente {orden} está listo")
                 self.comida.put(orden)
-                self.cocinero_A.release()
+                self.chef_A.release()
     def comiendo(self):
         time.sleep(1)
         if not self.comida.empty():
@@ -113,7 +115,7 @@ class Chef(threading.Thread):
     def __init__(self):
         super(Chef, self).__init__()
         self.id = Chef.aux
-        Cocinero.aux += 1
+        Chef.aux += 1
 
     def start(self):
         restaurante.cocinar(self)
@@ -148,7 +150,7 @@ class mesero(threading.Thread):
         restaurante._serve(self)
 
 def main():
-    cocineros = []
+    chefs = []
     clientes = []
     meseros = []
 
@@ -158,13 +160,13 @@ def main():
     for i in range(meseros_total):
         meseros.append(mesero())
     for i in range(chef):
-        cocineros.append(Chef())
+        chefs.append(Chef())
     for cliente in clientes:
         cliente.start()
     for waiter in meseros:
         waiter.start()
-    for cocineros1 in chefs:
-        cocineros1.start()
+    for chef1 in chefs:
+        chef1.start()
 
 if __name__ == '__main__':
     restaurante = restaurant()
